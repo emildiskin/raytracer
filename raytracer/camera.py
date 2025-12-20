@@ -5,6 +5,7 @@ Handles camera setup and ray generation through pixels
 
 import numpy as np
 from ray import Ray
+from raytracer.mathutils import cross, normalize
 
 
 class Camera:
@@ -66,9 +67,9 @@ class Camera:
         # 3. Calculate corrected up: self.up = normalize(cross(self.right, self.forward))
         
         # Placeholder - replace with actual implementation
-        self.forward = np.array([0, 0, -1], dtype=float)
-        self.right = np.array([1, 0, 0], dtype=float)
-        self.up = np.array([0, 1, 0], dtype=float)
+        self.forward = normalize(self.look_at - self.position)
+        self.right = normalize(cross(self.forward, self.up_vector))
+        self.up = normalize(cross(self.right, self.forward))
     
     def generate_ray(self, pixel_x, pixel_y, image_width, image_height):
         """
@@ -95,35 +96,15 @@ class Camera:
             4. Calculate point on screen in world coordinates
             5. Create ray from camera to screen point
         """
-        # TODO: Implement ray generation
-        # 1. Calculate aspect_ratio = image_width / image_height
-        # 2. Calculate screen_height = self.screen_width / aspect_ratio
-        # 3. Convert pixel to normalized coordinates:
-        #    screen_x = (pixel_x + 0.5) / image_width - 0.5
-        #    screen_y = 0.5 - (pixel_y + 0.5) / image_height  # Flip Y
-        # 4. Scale to screen dimensions:
-        #    screen_x *= self.screen_width
-        #    screen_y *= screen_height
-        # 5. Calculate screen center: screen_center = self.position + self.forward * self.screen_distance
-        # 6. Calculate screen point: screen_point = screen_center + self.right * screen_x + self.up * screen_y
-        # 7. Calculate ray direction: ray_direction = screen_point - self.position
-        # 8. Return Ray(self.position, ray_direction)
-        
-        # Placeholder - replace with actual implementation
-        return Ray(self.position, [0, 0, -1])
-    
-    @staticmethod
-    def normalize(vector):
-        """
-        Normalize a vector to unit length
-        
-        Args:
-            vector: numpy array - Vector to normalize
-            
-        Returns:
-            numpy array - Normalized vector (length = 1)
-        """
-        norm = np.linalg.norm(vector)
-        if norm == 0:
-            return vector
-        return vector / norm
+
+        aspect_ratio = image_width / image_height
+        screen_height = self.screen_width / aspect_ratio
+        screen_x = (pixel_x + 0.5) / image_width - 0.5
+        screen_y = 0.5 - (pixel_y + 0.5) / image_height  # Flip Y as image coordinates start at top-left
+        screen_x *= self.screen_width
+        screen_y *= screen_height
+        screen_center = self.position + self.forward * self.screen_distance
+        screen_point = screen_center + self.right * screen_x + self.up * screen_y
+        ray_direction = screen_point - self.position
+
+        return Ray(self.position, ray_direction)
