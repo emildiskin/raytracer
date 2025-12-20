@@ -204,41 +204,51 @@ class LightingEngine:
         return incident - 2 * np.dot(incident, normal) * normal
 
 
-# Helper functions for integration with Person 1's code
+# ============================================================================
+# INTEGRATION WITH PERSON 1's CODE
+# ============================================================================
+# Person 1 will implement these functions in intersections.py
+# Import them here once Person 1's code is ready:
+# from intersections import find_nearest_intersection
+# ============================================================================
 
 def find_nearest_intersection(ray_origin, ray_direction, surfaces, ignore_surface=None):
     """
-    PLACEHOLDER - Person 1 will implement this
+    PLACEHOLDER - Person 1 will implement this in intersections.py
+    
     Find the nearest surface intersection along a ray
     
     Args:
-        ray_origin: Starting point of ray
-        ray_direction: Direction of ray (normalized)
-        surfaces: List of all surfaces in scene
-        ignore_surface: Surface to ignore (e.g., the surface we're reflecting from)
+        ray_origin: numpy array [x, y, z] - Starting point of ray
+        ray_direction: numpy array [x, y, z] - Direction of ray (normalized)
+        surfaces: List of all surfaces in scene (Sphere, Plane, Cube objects)
+        ignore_surface: Optional surface object to ignore (for reflections)
         
     Returns:
-        Dict with keys: 'surface', 'hit_point', 'normal', 'distance'
-        or None if no intersection
-    """
-    # Person 1 will implement:
-    # - Check intersection with all spheres, planes, cubes
-    # - Return the nearest one
-    # - Include hit point, normal, and distance
-    return None
-
-
-def get_surface_normal(surface, hit_point):
-    """
-    PLACEHOLDER - Person 1 will implement this
-    Calculate surface normal at a given point
+        Dictionary with keys:
+            'surface': The surface object that was hit
+            'hit_point': numpy array [x, y, z] of intersection point
+            'normal': numpy array [x, y, z] of surface normal (normalized)
+            'distance': float - distance from ray_origin to hit_point
+        Returns None if no intersection found
     
-    Args:
-        surface: Surface object (Sphere, Plane, or Cube)
-        hit_point: Point on the surface
-        
-    Returns:
-        Normal vector (normalized)
+    Example return value:
+        {
+            'surface': sphere_object,
+            'hit_point': np.array([1.5, 2.0, 3.0]),
+            'normal': np.array([0.0, 1.0, 0.0]),
+            'distance': 5.2
+        }
+    
+    Person 1's Implementation Notes:
+        1. Create Ray object from ray_origin and ray_direction
+        2. For each surface in surfaces:
+           - Skip if surface == ignore_surface
+           - Check intersection based on type (Sphere/Plane/Cube)
+           - Track nearest intersection
+        3. Return nearest intersection with all required fields
+        4. Return None if no valid intersection found
     """
-    # Person 1 will implement based on surface type
-    return np.array([0, 1, 0])
+    # TEMPORARY PLACEHOLDER - Remove when Person 1's code is ready
+    # This allows Person 2 to test lighting without Person 1's code
+    return None
