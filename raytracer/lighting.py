@@ -1,8 +1,3 @@
-"""
-Lighting and Shading Module
-Person 2 Implementation: Handles all lighting calculations, shadows, reflections, and transparency
-"""
-
 import numpy as np
 
 
@@ -251,14 +246,28 @@ class LightingEngine:
         Returns:
             RGB color from reflection [r, g, b]
         """
-        # TODO: Implement reflections
-        # 1. Calculate reflection direction: incident - 2 * dot(incident, normal) * normal
-        # 2. Shoot new ray from hit_point in reflection direction
-        # 3. Find nearest intersection (call Person 1's intersection function)
-        # 4. Recursively compute color at intersection (recursion_depth + 1)
-        # 5. Multiply result by material.reflection_color
+        reflection_direction = self.reflect(incident_direction, normal)
         
-        return np.zeros(3)  # Placeholder
+        reflection_origin = hit_point + reflection_direction * 0.001
+        
+        intersection = find_nearest_intersection(
+            reflection_origin,
+            reflection_direction,
+            self.surfaces
+        )
+        
+
+        reflected_color = self.compute_color(
+            reflection_origin,
+            reflection_direction,
+            intersection,
+            recursion_depth + 1
+        )
+        
+        reflection_color = np.array(material.reflection_color)
+        final_reflection = reflected_color * reflection_color
+        
+        return final_reflection
     
     def compute_transparency(self, hit_point, ray_direction, material, recursion_depth):
         """
@@ -273,13 +282,22 @@ class LightingEngine:
         Returns:
             RGB color of background objects [r, g, b]
         """
-        # TODO: Implement transparency
-        # 1. Continue ray in same direction from hit_point
-        # 2. Find next intersection (call Person 1's intersection function)
-        # 3. Recursively compute color at that intersection (recursion_depth + 1)
-        # 4. Return the color (will be multiplied by transparency in main function)
+        # Offset slightly to avoid self-intersection
+        transparency_origin = hit_point + ray_direction * 0.001
         
-        return self.background_color  # Placeholder
+        intersection = find_nearest_intersection(
+            transparency_origin,
+            ray_direction,
+            self.surfaces
+        )
+        
+        background_color = self.compute_color(
+            transparency_origin,
+            ray_direction,
+            intersection,
+            recursion_depth + 1
+        )
+        return background_color
     
     def normalize(self, vector):
         """Utility: Normalize a vector"""
@@ -294,53 +312,3 @@ class LightingEngine:
         Formula: incident - 2 * dot(incident, normal) * normal
         """
         return incident - 2 * np.dot(incident, normal) * normal
-
-
-# ============================================================================
-# INTEGRATION WITH PERSON 1's CODE
-# ============================================================================
-# Person 1 will implement these functions in intersections.py
-# Import them here once Person 1's code is ready:
-# from intersections import find_nearest_intersection
-# ============================================================================
-
-def find_nearest_intersection(ray_origin, ray_direction, surfaces, ignore_surface=None):
-    """
-    PLACEHOLDER - Person 1 will implement this in intersections.py
-    
-    Find the nearest surface intersection along a ray
-    
-    Args:
-        ray_origin: numpy array [x, y, z] - Starting point of ray
-        ray_direction: numpy array [x, y, z] - Direction of ray (normalized)
-        surfaces: List of all surfaces in scene (Sphere, Plane, Cube objects)
-        ignore_surface: Optional surface object to ignore (for reflections)
-        
-    Returns:
-        Dictionary with keys:
-            'surface': The surface object that was hit
-            'hit_point': numpy array [x, y, z] of intersection point
-            'normal': numpy array [x, y, z] of surface normal (normalized)
-            'distance': float - distance from ray_origin to hit_point
-        Returns None if no intersection found
-    
-    Example return value:
-        {
-            'surface': sphere_object,
-            'hit_point': np.array([1.5, 2.0, 3.0]),
-            'normal': np.array([0.0, 1.0, 0.0]),
-            'distance': 5.2
-        }
-    
-    Person 1's Implementation Notes:
-        1. Create Ray object from ray_origin and ray_direction
-        2. For each surface in surfaces:
-           - Skip if surface == ignore_surface
-           - Check intersection based on type (Sphere/Plane/Cube)
-           - Track nearest intersection
-        3. Return nearest intersection with all required fields
-        4. Return None if no valid intersection found
-    """
-    # TEMPORARY PLACEHOLDER - Remove when Person 1's code is ready
-    # This allows Person 2 to test lighting without Person 1's code
-    return None
