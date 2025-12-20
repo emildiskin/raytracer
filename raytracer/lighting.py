@@ -108,22 +108,33 @@ class LightingEngine:
         Returns:
             RGB color contribution from this light [r, g, b]
         """
-        # TODO: Implement Phong lighting
-        # 1. Calculate light_direction (from hit_point to light)
-        # 2. Check if light is visible (compute shadow with soft shadows)
-        # 3. Calculate diffuse component: max(0, dot(normal, light_direction))
-        # 4. Calculate specular component using Phong model:
-        #    - reflection_direction = reflect(-light_direction, normal)
-        #    - specular = max(0, dot(view_direction, reflection_direction))^shininess
-        # 5. Combine: light_color * (diffuse_color * diffuse + specular_color * specular * specular_intensity)
-        # 6. Multiply by light_intensity from shadow calculation
+        light_direction = self.normalize(np.array(light.position) - hit_point)
         
-        return np.zeros(3)  # Placeholder
+        # 2. Check if light is visible (compute shadow intensity)
+        light_intensity = self.compute_shadow_intensity(hit_point, light)
+        
+        if light_intensity == 0:
+            return np.zeros(3) # return if object is in the dark
+        
+        diffuse_intensity = max(0, np.dot(normal, light_direction))
+        diffuse_color = np.array(material.diffuse_color) * diffuse_intensity
+        
+        reflection_direction = self.reflect(-light_direction, normal)
+        
+        view_dir = self.normalize(-np.array(view_direction))
+        specular_intensity = max(0, np.dot(view_dir, reflection_direction))
+        specular_intensity = specular_intensity ** material.shininess
+        specular_color = np.array(material.specular_color) * specular_intensity * light.specular_intensity
+
+        light_color = np.array(light.color)
+        combined_color = light_color * (diffuse_color + specular_color)
+        
+        return combined_color * light_intensity
     
     def compute_shadow_intensity(self, hit_point, light):
         """
         Compute shadow intensity using soft shadows (N×N shadow rays)
-        
+
         Args:
             hit_point: Point on surface to check for shadows
             light: Light object
@@ -131,19 +142,100 @@ class LightingEngine:
         Returns:
             float: Light intensity at hit_point (0.0 = fully shadowed, 1.0 = fully lit)
         """
-        # TODO: Implement soft shadows
-        # 1. If num_shadow_rays == 1, do simple hard shadow (one ray to light)
-        # 2. Otherwise, create N×N grid on plane perpendicular to light direction
-        # 3. For each cell in grid:
-        #    - Pick random point in cell
-        #    - Shoot ray from hit_point to that point
-        #    - Check if ray intersects any surface before reaching light
-        # 4. Count how many rays hit the surface vs total rays
-        # 5. Apply formula: (1 - shadow_intensity) + shadow_intensity * (hit_ratio)
+        N = self.num_shadow_rays
+        light_position = np.array(light.position)
+        to_light = light_position - hit_point
+        distance_to_light = np.linalg.norm(to_light)
+        light_direction = to_light / distance_to_light
         
-        # BONUS: Account for transparency of objects in the way
+        # find two perpendicular vectors to light_direction
+        if abs(light_direction[0]) > 0.1:
+            right = self.normalize(np.cross(light_direction, np.array([0, 1, 0])))
+        else:
+            right = self.normalize(np.cross(light_direction, np.array([1, 0, 0])))
+        up = self.normalize(np.cross(light_direction, right))
         
-        return 1.0  # Placeholder (fully lit, no shadows)
+        cell_size = light.radius / N
+        hits = 0
+        total_rays = N * N
+        
+        for i in range(N):
+            for j in range(N):
+                offset_x = (i + np.random.random()) * cell_size - light.radius / 2
+                offset_y = (j + np.random.random()) * cell_size - light.radius / 2
+                sample_point = light_position + right * offset_x + up * offset_y
+                
+                # Direction from hit point to sample point
+                to_sample = sample_point - hit_point
+                distance_to_sample = np.linalg.norm(to_sample)
+                sample_direction = to_sample / distance_to_sample
+                
+                # Offset to avoid self-intersection
+                shadow_ray_origin = hit_point + sample_direction * 0.001
+                
+                intersection = find_nearest_intersection(
+                    shadow_ray_origin,
+                    sample_direction,
+                    self.surfaces
+                )
+                
+                # Trace through potentially multiple transparent objects
+                light_visibility = self._trace_shadow_ray(
+                    shadow_ray_origin,
+                    sample_direction,
+                    distance_to_sample
+                )
+                hits += light_visibility
+        
+        hit_ratio = hits / total_rays
+        light_intensity = (1 - light.shadow_intensity) + light.shadow_intensity * hit_ratio
+        return light_intensity
+    
+    def _trace_shadow_ray(self, ray_origin, ray_direction, max_distance):
+        """
+        Trace shadow ray through potentially multiple transparent objects
+
+        Args:
+            ray_origin: Starting point of shadow ray
+            ray_direction: Direction toward light (normalized)
+            max_distance: Maximum distance to trace (distance to light sample point)
+            
+        Returns:
+            float: Amount of light that reaches the destination (0.0 to 1.0)
+                  1.0 = fully lit (no blocking objects)
+                  0.0 = fully blocked (opaque object in the way)
+                  0.0-1.0 = partially blocked (transparent objects)
+        """
+        accumulated_transparency = 1.0  # Start with full light transmission
+        current_origin = ray_origin
+        remaining_distance = max_distance
+        
+        # Trace through all objects along the ray path
+        while remaining_distance > 0.001:
+            # Find next intersection
+            intersection = find_nearest_intersection(
+                current_origin,
+                ray_direction,
+                self.surfaces
+            )
+            
+            # No more intersections - light reaches destination
+            if intersection is None or intersection['distance'] > remaining_distance:
+                return accumulated_transparency
+            
+            blocking_surface = intersection['surface']
+            blocking_material = self.materials[blocking_surface.material_index - 1]
+            
+            # Multiply accumulated transparency by this object's transparency
+            accumulated_transparency *= blocking_material.transparency
+            
+            if accumulated_transparency == 0:
+                return 0.0
+            
+            current_origin = intersection['hit_point'] + ray_direction * 0.001
+            remaining_distance -= (intersection['distance'] + 0.001)
+        
+        return accumulated_transparency
     
     def compute_reflection(self, hit_point, incident_direction, normal, material, recursion_depth):
         """
