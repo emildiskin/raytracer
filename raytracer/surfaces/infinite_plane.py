@@ -1,5 +1,6 @@
 import numpy as np
 from raytracer.intersection import Intersection
+from raytracer.mathutils import normalize
 
 
 class InfinitePlane:
@@ -28,7 +29,21 @@ class InfinitePlane:
         # 7. Calculate normal using get_normal(hit_point)
         # 8. Return Intersection(hit_point=hit_point, normal=normal, distance=t)
         
-        return None  # Placeholder
+        epsilon = 1e-6
+
+        normalized_normal = normalize(self.normal)
+        denom = np.dot(ray.direction, normalized_normal)
+        if abs(denom) < epsilon:
+            return None  # Ray is parallel to the plane
+        
+        t = (self.offset - np.dot(ray.origin, normalized_normal)) / denom
+        if t < 0.0001:
+            return None  # Intersection is behind the ray origin
+        
+        hit_point = ray.point_at(t)
+        normal = self.get_normal(hit_point)
+        return Intersection(hit_point=hit_point, normal=normal, distance=t)
+
     
     def get_normal(self, point):
         """
@@ -40,8 +55,7 @@ class InfinitePlane:
         Returns:
             numpy array - Normalized surface normal (constant for planes)
         """
-        # TODO: Implement normal calculation
-        # For planes, normal is constant everywhere
-        # Return normalized version of self.normal
-        
-        return np.array([0, 1, 0], dtype=float)  # Placeholder
+
+        # For infinite planes, the normal is constant everywhere
+        return normalize(self.normal)
+    
