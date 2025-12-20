@@ -1,4 +1,5 @@
 import numpy as np
+from raytracer.intersection import Intersection
 
 
 class InfinitePlane:
@@ -15,7 +16,7 @@ class InfinitePlane:
             ray: Ray object with origin and direction
             
         Returns:
-            Dictionary with 'hit_point', 'normal', 'distance' or None if no intersection
+            Intersection object or None if no intersection
         """
         # TODO: Implement plane intersection
         # 1. Normalize plane normal: normal = self.normal / |self.normal|
@@ -25,7 +26,7 @@ class InfinitePlane:
         # 5. If t < 0.0001: return None (intersection behind ray)
         # 6. Calculate hit_point = ray.point_at(t)
         # 7. Calculate normal using get_normal(hit_point)
-        # 8. Return {'hit_point': hit_point, 'normal': normal, 'distance': t}
+        # 8. Return Intersection(hit_point=hit_point, normal=normal, distance=t)
         
         return None  # Placeholder
     

@@ -1,4 +1,5 @@
 import numpy as np
+from raytracer.intersection import Intersection
 
 
 class Sphere:
@@ -15,7 +16,7 @@ class Sphere:
             ray: Ray object with origin and direction
             
         Returns:
-            Dictionary with 'hit_point', 'normal', 'distance' or None if no intersection
+            Intersection object or None if no intersection
         """
         # TODO: Implement sphere intersection
         # 1. Calculate vector from ray origin to sphere center: oc = ray.origin - self.position
@@ -29,7 +30,7 @@ class Sphere:
         # 6. Choose nearest positive t (> 0.0001 to avoid self-intersection)
         # 7. Calculate hit_point = ray.point_at(t)
         # 8. Calculate normal using get_normal(hit_point)
-        # 9. Return {'hit_point': hit_point, 'normal': normal, 'distance': t}
+        # 9. Return Intersection(hit_point=hit_point, normal=normal, distance=t)
         
         return None  # Placeholder
     

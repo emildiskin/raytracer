@@ -1,4 +1,5 @@
 import numpy as np
+from raytracer.intersection import Intersection
 
 
 class Cube:
@@ -15,7 +16,7 @@ class Cube:
             ray: Ray object with origin and direction
             
         Returns:
-            Dictionary with 'hit_point', 'normal', 'distance' or None if no intersection
+            Intersection object or None if no intersection
         """
         # TODO: Implement cube intersection using slabs method
         # 1. Calculate cube bounds:
@@ -36,7 +37,7 @@ class Cube:
         # 4. If t_min < 0.0001: check t_max, or return None
         # 5. Calculate hit_point = ray.point_at(t_min)
         # 6. Normal is already calculated and stored in hit_normal during slab testing
-        # 7. Return {'hit_point': hit_point, 'normal': hit_normal, 'distance': t_min}
+        # 7. Return Intersection(hit_point=hit_point, normal=hit_normal, distance=t_min)
         
         return None  # Placeholder
     

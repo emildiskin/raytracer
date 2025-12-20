@@ -16,19 +16,20 @@ from surfaces.cube import Cube
 
 # These functions are deprecated - kept for backwards compatibility
 # Use surface.intersect(ray) instead
+# All functions now return Intersection objects instead of dictionaries
 
 def intersect_sphere(ray, sphere):
-    """Deprecated: Use sphere.intersect(ray) instead"""
+    """Deprecated: Use sphere.intersect(ray) instead. Returns Intersection object or None."""
     return sphere.intersect(ray)
 
 
 def intersect_plane(ray, plane):
-    """Deprecated: Use plane.intersect(ray) instead"""
+    """Deprecated: Use plane.intersect(ray) instead. Returns Intersection object or None."""
     return plane.intersect(ray)
 
 
 def intersect_cube(ray, cube):
-    """Deprecated: Use cube.intersect(ray) instead"""
+    """Deprecated: Use cube.intersect(ray) instead. Returns Intersection object or None."""
     return cube.intersect(ray)
 
 
@@ -49,11 +50,11 @@ def find_nearest_intersection(ray, surfaces, ignore_surface=None):
                        to avoid self-intersection)
         
     Returns:
-        Dictionary with keys:
-            'surface': The surface object that was hit
-            'hit_point': numpy array [x, y, z] - intersection point
-            'normal': numpy array [x, y, z] - surface normal (normalized)
-            'distance': float - distance from ray origin to hit point
+        Intersection object with:
+            surface: The surface object that was hit
+            hit_point: numpy array [x, y, z] - intersection point
+            normal: numpy array [x, y, z] - surface normal (normalized)
+            distance: float - distance from ray origin to hit point
         Returns None if no intersection found
         
     Example Usage (from Person 2's code):
@@ -64,9 +65,9 @@ def find_nearest_intersection(ray, surfaces, ignore_surface=None):
         intersection = find_nearest_intersection(ray, surfaces)
         
         if intersection:
-            hit_point = intersection['hit_point']
-            normal = intersection['normal']
-            surface = intersection['surface']
+            hit_point = intersection.hit_point
+            normal = intersection.normal
+            surface = intersection.surface
             material = materials[surface.material_index - 1]
             # ... compute lighting ...
     
@@ -87,10 +88,10 @@ def find_nearest_intersection(ray, surfaces, ignore_surface=None):
     # 2. Loop through each surface in surfaces:
     #    - Skip if surface is ignore_surface
     #    - Call surface.intersect(ray) - all surfaces now have this method!
-    #    - If intersection exists and intersection['distance'] < nearest_distance:
-    #      * Update nearest_distance = intersection['distance']
+    #    - If intersection exists and intersection.distance < nearest_distance:
+    #      * Update nearest_distance = intersection.distance
     #      * Update nearest_intersection = intersection
-    #      * Add surface to intersection: nearest_intersection['surface'] = surface
+    #      * Add surface to intersection: nearest_intersection.surface = surface
     # 3. Return nearest_intersection
     
     return None  # Placeholder
