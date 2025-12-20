@@ -14,145 +14,22 @@ from surfaces.cube import Cube
 # INTERSECTION FUNCTIONS
 # ============================================================================
 
+# These functions are deprecated - kept for backwards compatibility
+# Use surface.intersect(ray) instead
+
 def intersect_sphere(ray, sphere):
-    """
-    Find intersection of ray with sphere using quadratic formula
-    
-    Mathematical Background:
-        Sphere equation: |P - C|² = r²
-        Ray equation: P(t) = O + tD
-        Substitute ray into sphere: |O + tD - C|² = r²
-        Expand to quadratic: at² + bt + c = 0
-        where:
-            a = D·D (always 1 since direction is normalized)
-            b = 2(O-C)·D
-            c = (O-C)·(O-C) - r²
-    
-    Args:
-        ray: Ray object with origin and direction
-        sphere: Sphere object with position (center) and radius
-        
-    Returns:
-        Dictionary with keys:
-            'hit_point': numpy array [x, y, z] - intersection point
-            'normal': numpy array [x, y, z] - surface normal (normalized)
-            'distance': float - distance from ray origin to hit point
-        Returns None if no intersection
-        
-    Example:
-        ray = Ray([0, 0, 5], [0, 0, -1])
-        sphere = Sphere([0, 0, 0], 1.0, 1)
-        result = intersect_sphere(ray, sphere)
-        # result = {'hit_point': [0, 0, 1], 'normal': [0, 0, 1], 'distance': 4.0}
-    """
-    # TODO: Implement sphere intersection
-    # 1. Calculate vector from ray origin to sphere center: oc = ray.origin - sphere.position
-    # 2. Calculate quadratic coefficients:
-    #    a = dot(ray.direction, ray.direction)
-    #    b = 2.0 * dot(oc, ray.direction)
-    #    c = dot(oc, oc) - sphere.radius²
-    # 3. Calculate discriminant: b² - 4ac
-    # 4. If discriminant < 0: return None (no intersection)
-    # 5. Calculate t values: t = (-b ± sqrt(discriminant)) / 2a
-    # 6. Choose nearest positive t (> 0.0001 to avoid self-intersection)
-    # 7. Calculate hit_point = ray.point_at(t)
-    # 8. Calculate normal = (hit_point - sphere.position) / sphere.radius
-    # 9. Return {'hit_point': hit_point, 'normal': normal, 'distance': t}
-    
-    return None  # Placeholder
+    """Deprecated: Use sphere.intersect(ray) instead"""
+    return sphere.intersect(ray)
 
 
 def intersect_plane(ray, plane):
-    """
-    Find intersection of ray with infinite plane
-    
-    Mathematical Background:
-        Plane equation: P·N = c (where N is normal, c is offset)
-        Ray equation: P(t) = O + tD
-        Substitute: (O + tD)·N = c
-        Solve for t: t = (c - O·N) / (D·N)
-    
-    Args:
-        ray: Ray object with origin and direction
-        plane: InfinitePlane object with normal and offset
-        
-    Returns:
-        Dictionary with keys:
-            'hit_point': numpy array [x, y, z] - intersection point
-            'normal': numpy array [x, y, z] - surface normal (normalized)
-            'distance': float - distance from ray origin to hit point
-        Returns None if no intersection (ray parallel to plane or behind ray)
-        
-    Example:
-        ray = Ray([0, 5, 0], [0, -1, 0])
-        plane = InfinitePlane([0, 1, 0], 0, 1)  # Horizontal plane at y=0
-        result = intersect_plane(ray, plane)
-        # result = {'hit_point': [0, 0, 0], 'normal': [0, 1, 0], 'distance': 5.0}
-    """
-    # TODO: Implement plane intersection
-    # 1. Normalize plane normal: normal = plane.normal / |plane.normal|
-    # 2. Calculate denominator: denom = dot(ray.direction, normal)
-    # 3. If |denom| < 1e-6: return None (ray parallel to plane)
-    # 4. Calculate t: t = (plane.offset - dot(ray.origin, normal)) / denom
-    # 5. If t < 0.0001: return None (intersection behind ray)
-    # 6. Calculate hit_point = ray.point_at(t)
-    # 7. Return {'hit_point': hit_point, 'normal': normal, 'distance': t}
-    
-    return None  # Placeholder
+    """Deprecated: Use plane.intersect(ray) instead"""
+    return plane.intersect(ray)
 
 
 def intersect_cube(ray, cube):
-    """
-    Find intersection of ray with axis-aligned cube using slabs method
-    
-    Mathematical Background:
-        The slabs method treats the cube as the intersection of 3 pairs of
-        parallel planes (slabs), one pair for each axis (X, Y, Z).
-        
-        For each axis:
-        1. Calculate t values where ray enters and exits the slab
-        2. Track the maximum entry t (t_min) and minimum exit t (t_max)
-        3. If t_min > t_max at any point, ray misses the cube
-        4. The face corresponding to t_min determines the hit normal
-    
-    Args:
-        ray: Ray object with origin and direction
-        cube: Cube object with position (center) and scale (edge length)
-        
-    Returns:
-        Dictionary with keys:
-            'hit_point': numpy array [x, y, z] - intersection point
-            'normal': numpy array [x, y, z] - surface normal (normalized)
-            'distance': float - distance from ray origin to hit point
-        Returns None if no intersection
-        
-    Example:
-        ray = Ray([0, 0, 5], [0, 0, -1])
-        cube = Cube([0, 0, 0], 2.0, 1)  # 2x2x2 cube centered at origin
-        result = intersect_cube(ray, cube)
-        # result = {'hit_point': [0, 0, 1], 'normal': [0, 0, 1], 'distance': 4.0}
-    """
-    # TODO: Implement cube intersection using slabs method
-    # 1. Calculate cube bounds:
-    #    half_size = cube.scale / 2
-    #    min_bound = cube.position - half_size
-    #    max_bound = cube.position + half_size
-    # 2. Initialize: t_min = -inf, t_max = inf, hit_normal = [0,0,0]
-    # 3. For each axis i in [0, 1, 2] (X, Y, Z):
-    #    a. If |ray.direction[i]| < 1e-6 (ray parallel to slab):
-    #       - If ray.origin[i] outside bounds: return None
-    #    b. Else:
-    #       - Calculate t1 = (min_bound[i] - ray.origin[i]) / ray.direction[i]
-    #       - Calculate t2 = (max_bound[i] - ray.origin[i]) / ray.direction[i]
-    #       - Ensure t1 <= t2 (swap if needed)
-    #       - If t1 > t_min: update t_min = t1 and set hit_normal for this axis
-    #       - If t2 < t_max: update t_max = t2
-    #       - If t_min > t_max: return None (slabs don't overlap)
-    # 4. If t_min < 0.0001: check t_max, or return None
-    # 5. Calculate hit_point = ray.point_at(t_min)
-    # 6. Return {'hit_point': hit_point, 'normal': hit_normal, 'distance': t_min}
-    
-    return None  # Placeholder
+    """Deprecated: Use cube.intersect(ray) instead"""
+    return cube.intersect(ray)
 
 
 # ============================================================================
@@ -209,10 +86,7 @@ def find_nearest_intersection(ray, surfaces, ignore_surface=None):
     #    nearest_distance = np.inf
     # 2. Loop through each surface in surfaces:
     #    - Skip if surface is ignore_surface
-    #    - Determine surface type and call appropriate function:
-    #      * if isinstance(surface, Sphere): intersection = intersect_sphere(ray, surface)
-    #      * elif isinstance(surface, InfinitePlane): intersection = intersect_plane(ray, surface)
-    #      * elif isinstance(surface, Cube): intersection = intersect_cube(ray, surface)
+    #    - Call surface.intersect(ray) - all surfaces now have this method!
     #    - If intersection exists and intersection['distance'] < nearest_distance:
     #      * Update nearest_distance = intersection['distance']
     #      * Update nearest_intersection = intersection
