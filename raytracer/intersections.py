@@ -5,6 +5,7 @@ Handles ray-surface intersection calculations for spheres, planes, and cubes
 
 import numpy as np
 from ray import Ray
+from raytracer.intersection import Intersection
 from surfaces.sphere import Sphere
 from surfaces.infinite_plane import InfinitePlane
 from surfaces.cube import Cube
@@ -34,8 +35,49 @@ def intersect_cube(ray, cube):
 
 
 # ============================================================================
-# MAIN INTERSECTION FUNCTION - USED BY PERSON 2
+# MAIN INTERSECTION FUNCTIONS - USED BY PERSON 2
 # ============================================================================
+
+def find_all_intersections(ray, surfaces, ignore_surface=None):
+    """
+    Find all surface intersections along a ray
+    
+    Args:
+        ray: Ray object with origin and direction
+        surfaces: List of all surface objects in the scene (Sphere, Plane, Cube)
+        ignore_surface: Optional surface object to ignore (used for reflections
+                       to avoid self-intersection)
+        
+    Returns:
+        List of Intersection objects, each with:
+            surface: The surface object that was hit
+            hit_point: numpy array [x, y, z] - intersection point
+            normal: numpy array [x, y, z] - surface normal (normalized)
+            distance: float - distance from ray origin to hit point
+        Returns empty list if no intersections found
+        
+    Example Usage:
+        intersections = find_all_intersections(ray, surfaces)
+        for intersection in intersections:
+            print(f"Hit {intersection.surface} at distance {intersection.distance}")
+    """
+    intersections = []
+    
+    for surface in surfaces:
+        # Skip if this is the surface to ignore (avoid self-intersection)
+        if surface == ignore_surface:
+            continue
+        
+        # Call the surface's intersect method
+        intersection = surface.intersect(ray)
+        
+        # If intersection found, add surface reference and append to list
+        if intersection is not None:
+            intersection.surface = surface
+            intersections.append(intersection)
+    
+    return intersections
+
 
 def find_nearest_intersection(ray, surfaces, ignore_surface=None):
     """
@@ -70,31 +112,26 @@ def find_nearest_intersection(ray, surfaces, ignore_surface=None):
             surface = intersection.surface
             material = materials[surface.material_index - 1]
             # ... compute lighting ...
-    
-    Implementation Notes:
-        1. Initialize nearest_distance = infinity
-        2. For each surface in surfaces:
-           - Skip if surface == ignore_surface
-           - Call appropriate intersection function based on type
-           - If intersection found and distance < nearest_distance:
-             - Update nearest_distance and nearest_intersection
-        3. Add 'surface' key to nearest_intersection dict
-        4. Return nearest_intersection (or None if no hits)
     """
-    # TODO: Implement find_nearest_intersection
-    # 1. Initialize tracking variables:
-    #    nearest_intersection = None
-    #    nearest_distance = np.inf
-    # 2. Loop through each surface in surfaces:
-    #    - Skip if surface is ignore_surface
-    #    - Call surface.intersect(ray) - all surfaces now have this method!
-    #    - If intersection exists and intersection.distance < nearest_distance:
-    #      * Update nearest_distance = intersection.distance
-    #      * Update nearest_intersection = intersection
-    #      * Add surface to intersection: nearest_intersection.surface = surface
-    # 3. Return nearest_intersection
+    nearest_intersection = None
+    nearest_distance = np.inf
     
-    return None  # Placeholder
+    for surface in surfaces:
+        # Skip if this is the surface to ignore (avoid self-intersection)
+        if surface == ignore_surface:
+            continue
+        
+        # Call the surface's intersect method
+        intersection = surface.intersect(ray)
+        
+        # Check if this is the closest intersection so far
+        if intersection is not None and intersection.distance < nearest_distance:
+            nearest_distance = intersection.distance
+            nearest_intersection = intersection
+            # Add reference to the surface that was hit
+            nearest_intersection.surface = surface
+    
+    return nearest_intersection
 
 
 # ============================================================================
@@ -125,3 +162,20 @@ def find_nearest_intersection_from_components(ray_origin, ray_direction, surface
     """
     ray = Ray(ray_origin, ray_direction)
     return find_nearest_intersection(ray, surfaces, ignore_surface)
+
+
+def find_all_intersections_from_components(ray_origin, ray_direction, surfaces, ignore_surface=None):
+    """
+    Wrapper function that accepts ray components instead of Ray object
+    
+    Args:
+        ray_origin: numpy array [x, y, z] - Starting point of ray
+        ray_direction: numpy array [x, y, z] - Direction of ray
+        surfaces: List of all surface objects
+        ignore_surface: Optional surface to ignore
+        
+    Returns:
+        Same as find_all_intersections()
+    """
+    ray = Ray(ray_origin, ray_direction)
+    return find_all_intersections(ray, surfaces, ignore_surface)
