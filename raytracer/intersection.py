@@ -1,7 +1,3 @@
-"""
-Intersection data structure for ray tracing
-"""
-
 from dataclasses import dataclass
 import numpy as np
 

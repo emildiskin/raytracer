@@ -1,8 +1,3 @@
-"""
-Camera Module - Person 1 Implementation
-Handles camera setup and ray generation through pixels
-"""
-
 import numpy as np
 from ray import Ray
 from mathutils import cross, normalize
@@ -41,8 +36,6 @@ class Camera:
         self.up_vector = np.array(up_vector, dtype=float)
         self.screen_distance = screen_distance
         self.screen_width = screen_width
-        
-        # Compute camera coordinate system (forward, right, up)
         self._setup_camera_basis()
     
     def _setup_camera_basis(self):
@@ -55,18 +48,7 @@ class Camera:
         - up: perpendicular to forward and right (corrected up direction)
         
         This forms a right-handed coordinate system.
-        
-        Implementation Notes:
-            1. forward = normalize(look_at - position)
-            2. right = normalize(cross(forward, up_vector))
-            3. up = normalize(cross(right, forward))
         """
-        # TODO: Implement camera basis setup
-        # 1. Calculate forward direction: self.forward = normalize(self.look_at - self.position)
-        # 2. Calculate right direction: self.right = normalize(cross(self.forward, self.up_vector))
-        # 3. Calculate corrected up: self.up = normalize(cross(self.right, self.forward))
-        
-        # Placeholder - replace with actual implementation
         self.forward = normalize(self.look_at - self.position)
         self.right = normalize(cross(self.forward, self.up_vector))
         self.up = normalize(cross(self.right, self.forward))
@@ -85,16 +67,6 @@ class Camera:
             
         Returns:
             Ray object pointing from camera through the pixel center
-            
-        Example:
-            ray = camera.generate_ray(250, 250, 500, 500)  # Center pixel
-            
-        Implementation Steps:
-            1. Calculate aspect ratio and screen height
-            2. Convert pixel coordinates to screen coordinates [-0.5, 0.5]
-            3. Scale by screen dimensions
-            4. Calculate point on screen in world coordinates
-            5. Create ray from camera to screen point
         """
 
         aspect_ratio = image_width / image_height

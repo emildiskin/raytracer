@@ -19,16 +19,6 @@ class InfinitePlane:
         Returns:
             Intersection object or None if no intersection
         """
-        # TODO: Implement plane intersection
-        # 1. Normalize plane normal: normal = self.normal / |self.normal|
-        # 2. Calculate denominator: denom = dot(ray.direction, normal)
-        # 3. If |denom| < 1e-6: return None (ray parallel to plane)
-        # 4. Calculate t: t = (self.offset - dot(ray.origin, normal)) / denom
-        # 5. If t < 0.0001: return None (intersection behind ray)
-        # 6. Calculate hit_point = ray.point_at(t)
-        # 7. Calculate normal using get_normal(hit_point)
-        # 8. Return Intersection(hit_point=hit_point, normal=normal, distance=t)
-        
         epsilon = 1e-6
 
         normalized_normal = normalize(self.normal)

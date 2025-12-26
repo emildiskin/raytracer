@@ -1,8 +1,3 @@
-"""
-Ray Class - Person 1 Implementation
-Represents a ray with origin and direction for ray tracing
-"""
-
 import numpy as np
 
 
@@ -21,9 +16,6 @@ class Ray:
         Args:
             origin: numpy array [x, y, z] or list - Starting point of the ray
             direction: numpy array [x, y, z] or list - Direction vector (will be normalized)
-        
-        Example:
-            ray = Ray([0, 0, 0], [1, 0, 0])  # Ray from origin pointing along X-axis
         """
         self.origin = np.array(origin, dtype=float)
         self.direction = self.normalize(np.array(direction, dtype=float))
@@ -39,10 +31,6 @@ class Ray:
             
         Returns:
             numpy array [x, y, z] - Point at distance t along the ray
-            
-        Example:
-            ray = Ray([0, 0, 0], [1, 0, 0])
-            point = ray.point_at(5.0)  # Returns [5, 0, 0]
         """
         return self.origin + t * self.direction
     
