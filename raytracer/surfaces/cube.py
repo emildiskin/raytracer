@@ -1,5 +1,5 @@
 import numpy as np
-from raytracer.intersection import Intersection
+from intersection import Intersection
 
 
 class Cube:

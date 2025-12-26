@@ -1,6 +1,6 @@
 import numpy as np
-from raytracer.intersection import Intersection
-from raytracer.mathutils import normalize
+from intersection import Intersection
+from mathutils import normalize
 
 
 class InfinitePlane:
@@ -58,4 +58,3 @@ class InfinitePlane:
 
         # For infinite planes, the normal is constant everywhere
         return normalize(self.normal)
-    

@@ -5,7 +5,7 @@ Handles ray-surface intersection calculations for spheres, planes, and cubes
 
 import numpy as np
 from ray import Ray
-from raytracer.intersection import Intersection
+from intersection import Intersection
 from surfaces.sphere import Sphere
 from surfaces.infinite_plane import InfinitePlane
 from surfaces.cube import Cube
@@ -65,7 +65,7 @@ def find_all_intersections(ray, surfaces, ignore_surface=None):
     
     for surface in surfaces:
         # Skip if this is the surface to ignore (avoid self-intersection)
-        if surface == ignore_surface:
+        if surface is ignore_surface:
             continue
         
         # Call the surface's intersect method
@@ -118,7 +118,7 @@ def find_nearest_intersection(ray, surfaces, ignore_surface=None):
     
     for surface in surfaces:
         # Skip if this is the surface to ignore (avoid self-intersection)
-        if surface == ignore_surface:
+        if surface is ignore_surface:
             continue
         
         # Call the surface's intersect method

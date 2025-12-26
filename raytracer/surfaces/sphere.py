@@ -1,5 +1,5 @@
 import numpy as np
-from raytracer.intersection import Intersection
+from intersection import Intersection
 
 
 class Sphere:
@@ -73,4 +73,3 @@ class Sphere:
         # Normal = (point - center) / radius
         normal = (point - self.position) / self.radius
         return normal
-        

@@ -5,7 +5,7 @@ Handles camera setup and ray generation through pixels
 
 import numpy as np
 from ray import Ray
-from raytracer.mathutils import cross, normalize
+from mathutils import cross, normalize
 
 
 class Camera:

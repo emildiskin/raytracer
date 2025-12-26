@@ -9,6 +9,9 @@ from scene_settings import SceneSettings
 from surfaces.cube import Cube
 from surfaces.infinite_plane import InfinitePlane
 from surfaces.sphere import Sphere
+from lighting import LightingEngine
+from intersections import find_nearest_intersection
+from ray import Ray
 
 
 def parse_scene_file(file_path):
@@ -47,11 +50,10 @@ def parse_scene_file(file_path):
     return camera, scene_settings, objects
 
 
-def save_image(image_array):
+def save_image(image_array, output_path):
+    """Save the rendered image to a file"""
     image = Image.fromarray(np.uint8(image_array))
-
-    # Save the image to a file
-    image.save("scenes/Spheres.png")
+    image.save(output_path)
 
 
 def main():
@@ -65,13 +67,59 @@ def main():
     # Parse the scene file
     camera, scene_settings, objects = parse_scene_file(args.scene_file)
 
-    # TODO: Implement the ray tracer
-
-    # Dummy result
-    image_array = np.zeros((500, 500, 3))
-
+    # Separate objects into materials, lights, and surfaces
+    materials = []
+    lights = []
+    surfaces = []
+    
+    for obj in objects:
+        if isinstance(obj, Material):
+            materials.append(obj)
+        elif isinstance(obj, Light):
+            lights.append(obj)
+        elif isinstance(obj, (Sphere, InfinitePlane, Cube)):
+            surfaces.append(obj)
+    
+    # Initialize the lighting engine
+    lighting_engine = LightingEngine(scene_settings, materials, lights, surfaces)
+    
+    # Create image array
+    image_width = args.width
+    image_height = args.height
+    image_array = np.zeros((image_height, image_width, 3))
+    
+    print(f"Rendering {image_width}x{image_height} image...")
+    print(f"Scene: {len(surfaces)} surfaces, {len(lights)} lights, {len(materials)} materials")
+    print(f"Settings: {int(scene_settings.root_number_shadow_rays)}x{int(scene_settings.root_number_shadow_rays)} shadow rays, max recursion: {int(scene_settings.max_recursions)}")
+    
+    # Ray trace each pixel
+    for y in range(image_height):
+        if y % 50 == 0:
+            print(f"Progress: {y}/{image_height} rows ({100*y//image_height}%)")
+        
+        for x in range(image_width):
+            # Generate ray through this pixel
+            ray = camera.generate_ray(x, y, image_width, image_height)
+            
+            # Find nearest intersection
+            intersection = find_nearest_intersection(ray, surfaces)
+            
+            # Compute color using lighting engine
+            color = lighting_engine.compute_color(
+                ray.origin,
+                ray.direction,
+                intersection,
+                recursion_depth=0
+            )
+            
+            # Store color in image array
+            image_array[y, x] = color
+    
+    print("Rendering complete!")
+    
     # Save the output image
-    save_image(image_array)
+    save_image(image_array, args.output_image)
+    print(f"Image saved to: {args.output_image}")
 
 
 if __name__ == '__main__':

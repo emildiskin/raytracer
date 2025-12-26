@@ -1,4 +1,6 @@
 import numpy as np
+from ray import Ray
+from intersections import find_nearest_intersection
 
 
 class LightingEngine:
@@ -45,9 +47,9 @@ class LightingEngine:
             return self.background_color
         
         # Extract intersection information
-        surface = intersection_data['surface']
-        hit_point = intersection_data['hit_point']
-        normal = intersection_data['normal']
+        surface = intersection_data.surface
+        hit_point = intersection_data.hit_point
+        normal = intersection_data.normal
         
         # Get material properties
         material = self.materials[surface.material_index - 1]  # material_index is 1-based
@@ -65,7 +67,7 @@ class LightingEngine:
             diffuse_specular_color += light_contribution
         
         # 2. Compute reflections (if material is reflective and recursion limit not reached)
-        if recursion_depth < self.max_recursion and np.any(material.reflection_color > 0):
+        if recursion_depth < self.max_recursion and np.any(np.array(material.reflection_color) > 0):
             reflection_color = self.compute_reflection(
                 hit_point, ray_direction, normal, material, recursion_depth
             )
@@ -86,7 +88,6 @@ class LightingEngine:
             reflection_color
         )
         
-        # Clamp to valid RGB range [0, 255]
         return np.clip(final_color, 0, 255)
     
     def compute_light_contribution(self, hit_point, normal, view_direction, material, light):
@@ -168,9 +169,9 @@ class LightingEngine:
                 # Offset to avoid self-intersection
                 shadow_ray_origin = hit_point + sample_direction * 0.001
                 
+                shadow_ray = Ray(shadow_ray_origin, sample_direction)
                 intersection = find_nearest_intersection(
-                    shadow_ray_origin,
-                    sample_direction,
+                    shadow_ray,
                     self.surfaces
                 )
                 
@@ -208,17 +209,17 @@ class LightingEngine:
         # Trace through all objects along the ray path
         while remaining_distance > 0.001:
             # Find next intersection
+            ray = Ray(current_origin, ray_direction)
             intersection = find_nearest_intersection(
-                current_origin,
-                ray_direction,
+                ray,
                 self.surfaces
             )
             
             # No more intersections - light reaches destination
-            if intersection is None or intersection['distance'] > remaining_distance:
+            if intersection is None or intersection.distance > remaining_distance:
                 return accumulated_transparency
             
-            blocking_surface = intersection['surface']
+            blocking_surface = intersection.surface
             blocking_material = self.materials[blocking_surface.material_index - 1]
             
             # Multiply accumulated transparency by this object's transparency
@@ -227,8 +228,8 @@ class LightingEngine:
             if accumulated_transparency == 0:
                 return 0.0
             
-            current_origin = intersection['hit_point'] + ray_direction * 0.001
-            remaining_distance -= (intersection['distance'] + 0.001)
+            current_origin = intersection.hit_point + ray_direction * 0.001
+            remaining_distance -= (intersection.distance + 0.001)
         
         return accumulated_transparency
     
@@ -250,9 +251,9 @@ class LightingEngine:
         
         reflection_origin = hit_point + reflection_direction * 0.001
         
+        reflection_ray = Ray(reflection_origin, reflection_direction)
         intersection = find_nearest_intersection(
-            reflection_origin,
-            reflection_direction,
+            reflection_ray,
             self.surfaces
         )
         
@@ -285,9 +286,9 @@ class LightingEngine:
         # Offset slightly to avoid self-intersection
         transparency_origin = hit_point + ray_direction * 0.001
         
+        transparency_ray = Ray(transparency_origin, ray_direction)
         intersection = find_nearest_intersection(
-            transparency_origin,
-            ray_direction,
+            transparency_ray,
             self.surfaces
         )
         
