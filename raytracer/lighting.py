@@ -26,7 +26,7 @@ class LightingEngine:
         self.materials = materials
         self.lights = lights
         self.surfaces = surfaces
-        self.background_color = np.array(scene_settings.background_color)
+        self.background_color = np.array(scene_settings.background_color) * 255
         self.max_recursion = int(scene_settings.max_recursions)
         self.num_shadow_rays = int(scene_settings.root_number_shadow_rays)
     
@@ -113,14 +113,14 @@ class LightingEngine:
             return np.zeros(3) # return if object is in the dark
         
         diffuse_intensity = max(0, np.dot(normal, light_direction))
-        diffuse_color = np.array(material.diffuse_color) * diffuse_intensity
+        diffuse_color = np.array(material.diffuse_color) * 255 * diffuse_intensity
         
         reflection_direction = self.reflect(-light_direction, normal)
         
         view_dir = self.normalize(-np.array(view_direction))
         specular_intensity = max(0, np.dot(view_dir, reflection_direction))
         specular_intensity = specular_intensity ** material.shininess
-        specular_color = np.array(material.specular_color) * specular_intensity * light.specular_intensity
+        specular_color = np.array(material.specular_color) * 255 * specular_intensity * light.specular_intensity
 
         light_color = np.array(light.color)
         combined_color = light_color * (diffuse_color + specular_color)
