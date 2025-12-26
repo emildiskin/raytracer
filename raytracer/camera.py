@@ -76,7 +76,7 @@ class Camera:
         screen_x *= self.screen_width
         screen_y *= screen_height
         screen_center = self.position + self.forward * self.screen_distance
-        screen_point = screen_center + self.right * screen_x + self.up * screen_y
+        screen_point = screen_center - self.right * screen_x + self.up * screen_y
         ray_direction = screen_point - self.position
 
         return Ray(self.position, ray_direction)
